@@ -5,6 +5,10 @@ import { memory } from "../services/memory";
 import { TransactionStatus } from "./enums";
 import { verifySignatures } from "./utils";
 
+export const getHandshake = () => {
+    return true;
+};
+
 export const getTransactions = (request, h) => {
     if (request.query.publicKey) {
         const storeTransactions = memory.getTransactionsByPublicKey(request.query.publicKey);

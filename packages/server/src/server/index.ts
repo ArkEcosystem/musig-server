@@ -50,6 +50,12 @@ export async function startServer(options: Record<string, string | number | bool
 
     server.route({
         method: "GET",
+        path: "/handshake",
+        handler: handlers.getHandshake,
+    });
+
+    server.route({
+        method: "GET",
         path: "/transactions",
         handler: handlers.getTransactions,
         options: {
