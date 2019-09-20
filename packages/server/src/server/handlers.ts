@@ -1,4 +1,4 @@
-import { Interfaces } from "@arkecosystem/crypto";
+import { Enums, Interfaces } from "@arkecosystem/crypto";
 import Boom from "@hapi/boom";
 import { IStoreTransaction } from "../interfaces";
 import { memory } from "../services/memory";
@@ -27,12 +27,17 @@ export const getTransaction = (request, h) => {
 export const postTransaction = (request, h) => {
     const transaction: IStoreTransaction = request.payload;
 
-    if (!transaction.data.signatures || !transaction.data.signatures.length) {
-        return Boom.badData("Transaction provided does not have any signature from multisignature keys");
-    }
+    if (
+        transaction.data.type !== Enums.TransactionType.MultiSignature &&
+        (!transaction.data.typeGroup || transaction.data.typeGroup === Enums.TransactionTypeGroup.Core)
+    ) {
+        if (!transaction.data.signatures || !transaction.data.signatures.length) {
+            return Boom.badData("Transaction provided does not have any signature from multisignature keys");
+        }
 
-    if (!verifySignatures(transaction.data, transaction.multisigAsset)) {
-        return Boom.badData("Transaction signatures are not valid");
+        if (!verifySignatures(transaction.data, transaction.multisigAsset)) {
+            return Boom.badData("Transaction signatures are not valid");
+        }
     }
 
     const storeId = memory.saveTransaction(transaction);

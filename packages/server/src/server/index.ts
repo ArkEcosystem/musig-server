@@ -14,22 +14,25 @@ const initDatabaseSync = () => {
     const transactions = storage.loadAll();
     memory.loadTransactions(transactions);
 
+    // need specific schema validation to disable the need for signatures number == participants number
+    const multiSigSchema = Transactions.schemas.multiSignature;
+    Validation.validator.extendTransaction(multiSigSchema, true);
+
+    multiSigSchema.properties.signatures.minItems = 0;
+    (multiSigSchema as any).required = ["asset"];
+
+    Validation.validator.extendTransaction(multiSigSchema);
+
     storage.disconnect();
 };
 
 const verifySchema = (data: Interfaces.ITransactionData) => {
-    let validationResult;
-    if (data.type === Enums.TransactionTypes.MultiSignature) {
-        // need specific schema validation to disable the need for signatures number == participants number
-        const multiSigSchema = Transactions.schemas.multiSignature;
-        multiSigSchema.properties.signatures.minItems = 1;
-        Validation.validator.extendTransaction(multiSigSchema, true);
-        validationResult = Validation.validator.validate(multiSigSchema, data);
-    } else {
-        validationResult = Transactions.Verifier.verifySchema(data);
-    }
+    const isMultiSignaureRegistration =
+        data.type === Enums.TransactionType.MultiSignature &&
+        (!data.typeGroup || data.typeGroup === Enums.TransactionTypeGroup.Core);
 
-    const { error } = validationResult;
+    const { error } = Transactions.Verifier.verifySchema(data, !isMultiSignaureRegistration);
+
     if (error) {
         throw new Error(error);
     }
@@ -53,7 +56,7 @@ export async function startServer(options: Record<string, string | number | bool
                 async query(data: object, options: object) {
                     const schema = {
                         type: "object",
-                        required: ["publicKey"],
+                        // required: ["publicKey"],
                         properties: {
                             publicKey: {
                                 $ref: "publicKey",
