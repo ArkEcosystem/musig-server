@@ -1,6 +1,6 @@
 import "jest-extended";
 
-import { Managers, Transactions } from "@arkecosystem/crypto";
+import { Identities, Managers, Transactions } from "@arkecosystem/crypto";
 import { Server } from "@hapi/hapi";
 import got from "got";
 import { launchServer } from "../__support__";
@@ -106,53 +106,203 @@ describe("Transactions", () => {
         });
     });
 
-    describe("POST transaction", () => {
-        it("should store the transaction", async () => {
-            const data = transaction
-                .sign(passphrase)
-                .multiSign(passphrase, 0)
-                .getStruct();
-            const response = await got.post(`http://localhost:8080/transaction`, {
-                body: JSON.stringify({
-                    data,
-                    multisigAsset,
-                }),
+    describe("MultiSignatureRegistration", () => {
+        describe("POST transaction", () => {
+            it("should store multisignature registration without signatures", async () => {
+                const data = transaction.sign(passphrase).getStruct();
+
+                const response = await got.post(`http://localhost:8080/transaction`, {
+                    body: JSON.stringify({
+                        data,
+                        multisigAsset,
+                    }),
+                });
+
+                expect(JSON.parse(response.body)).toHaveProperty("id");
             });
 
-            expect(JSON.parse(response.body)).toHaveProperty("id");
+            it("should store multisignature registration with one signature", async () => {
+                const data = transaction
+                    .sign(passphrase)
+                    .multiSign(passphrase, 0)
+                    .getStruct();
+                const response = await got.post(`http://localhost:8080/transaction`, {
+                    body: JSON.stringify({
+                        data,
+                        multisigAsset,
+                    }),
+                });
+
+                expect(JSON.parse(response.body)).toHaveProperty("id");
+            });
+
+            it("should not store the same multisignature registration twice", async () => {
+                const data = transaction
+                    .sign(passphrase)
+                    .multiSign(passphrase, 0)
+                    .getStruct();
+
+                const response = await got.post(`http://localhost:8080/transaction`, {
+                    body: JSON.stringify({
+                        data,
+                        multisigAsset,
+                    }),
+                });
+
+                expect(JSON.parse(response.body)).toHaveProperty("id");
+            });
+        });
+
+        describe("PUT transaction", () => {
+            it("should update the transaction", async () => {
+                const data = transaction
+                    .sign(passphrase)
+                    .multiSign(passphrase, 0)
+                    .multiSign(passphrases[1], 1)
+                    .getStruct();
+
+                const responsePostTx = await got.post(`http://localhost:8080/transaction`, {
+                    body: JSON.stringify({
+                        data,
+                        multisigAsset,
+                    }),
+                });
+
+                const responsePostBody = JSON.parse(responsePostTx.body);
+                expect(responsePostBody).toHaveProperty("id");
+
+                const data2ndSigned = transaction.multiSign(passphrases[2], 2).getStruct();
+
+                await got.put(`http://localhost:8080/transaction/${responsePostBody.id}`, {
+                    body: JSON.stringify({ data: data2ndSigned }),
+                });
+                const responseGetTx = await got.get(`http://localhost:8080/transaction/${responsePostBody.id}`);
+
+                const body = JSON.parse(responseGetTx.body);
+                expect(body).toBeObject();
+                expect(body.data).toEqual(JSON.parse(JSON.stringify(data2ndSigned)));
+                expect(body.multisigAsset).toEqual(multisigAsset);
+                expect(body.id).toEqual(responsePostBody.id);
+                expect(body).toHaveProperty("timestamp");
+            });
         });
     });
 
-    describe("PUT transaction", () => {
-        it("should update the transaction", async () => {
-            const data = transaction
-                .sign(passphrase)
-                .multiSign(passphrase, 0)
-                .multiSign(passphrases[1], 1)
-                .getStruct();
-            const responsePostTx = await got.post(`http://localhost:8080/transaction`, {
-                body: JSON.stringify({
-                    data,
-                    multisigAsset,
-                }),
+    describe("MultiSignatureTransfer", () => {
+        let transfer;
+        beforeEach(async () => {
+            await got.delete("http://localhost:8080/transactions");
+            transfer = Transactions.BuilderFactory.transfer().network(23);
+        });
+
+        describe("POST transaction", () => {
+            it("should store multisignature transfer with one signature", async () => {
+                const data = transfer
+                    .senderPublicKey(Identities.PublicKey.fromMultiSignatureAsset(multisigAsset))
+                    .recipientId(Identities.Address.fromMultiSignatureAsset(multisigAsset))
+                    .amount("1")
+                    .multiSign(passphrase, 0)
+                    .getStruct();
+
+                const response = await got.post(`http://localhost:8080/transaction`, {
+                    body: JSON.stringify({
+                        data,
+                        multisigAsset,
+                    }),
+                });
+
+                expect(JSON.parse(response.body)).toHaveProperty("id");
             });
+        });
 
-            const responsePostBody = JSON.parse(responsePostTx.body);
-            expect(responsePostBody).toHaveProperty("id");
+        describe("PUT transaction", () => {
+            it("should update the transaction", async () => {
+                const data = transfer
+                    .senderPublicKey(Identities.PublicKey.fromMultiSignatureAsset(multisigAsset))
+                    .recipientId(Identities.Address.fromMultiSignatureAsset(multisigAsset))
+                    .amount("1")
+                    .multiSign(passphrase, 0);
 
-            const data2ndSigned = transaction.multiSign(passphrases[2], 2).getStruct();
+                // PUT first signature
+                const transferOneSignature = data.getStruct();
+                const responsePostTx = await got.post(`http://localhost:8080/transaction`, {
+                    body: JSON.stringify({
+                        data: transferOneSignature,
+                        multisigAsset,
+                    }),
+                });
 
-            await got.put(`http://localhost:8080/transaction/${responsePostBody.id}`, {
-                body: JSON.stringify({ data: data2ndSigned }),
+                const responsePostBody = JSON.parse(responsePostTx.body);
+                expect(responsePostBody).toHaveProperty("id");
+
+                // Should not be READY
+                let readyResponse = JSON.parse(
+                    (await got.get(
+                        "http://localhost:8080/transactions?publicKey=02a942252b20b1069eec7d677cafb6e40d1b6c5ca2f72b5fb88388b340e86a47e8&state=ready",
+                    )).body,
+                );
+                expect(readyResponse).toBeArray();
+                expect(readyResponse).toBeEmpty();
+
+                let pendingResponse = JSON.parse(
+                    (await got.get(
+                        "http://localhost:8080/transactions?publicKey=02a942252b20b1069eec7d677cafb6e40d1b6c5ca2f72b5fb88388b340e86a47e8&state=pending",
+                    )).body,
+                );
+                expect(pendingResponse).toBeArray();
+                expect(pendingResponse).toHaveLength(1);
+
+                // PUT second signature
+                data.multiSign(passphrases[1], 1);
+
+                const transferTwoSignatures = data.getStruct();
+                await got.put(`http://localhost:8080/transaction/${responsePostBody.id}`, {
+                    body: JSON.stringify({ data: transferTwoSignatures }),
+                });
+
+                let responseGetTx = await got.get(`http://localhost:8080/transaction/${responsePostBody.id}`);
+
+                const expectResponse = transaction => {
+                    expect(body).toBeObject();
+                    expect(body.data).toEqual(JSON.parse(JSON.stringify(transaction)));
+                    expect(body.multisigAsset).toEqual(multisigAsset);
+                    expect(body.id).toEqual(responsePostBody.id);
+                    expect(body).toHaveProperty("timestamp");
+                };
+
+                let body = JSON.parse(responseGetTx.body);
+                expectResponse(transferTwoSignatures);
+
+                // PUT third signature
+                data.multiSign(passphrases[2], 2);
+
+                const transferThreeSignatures = data.getStruct();
+
+                await got.put(`http://localhost:8080/transaction/${responsePostBody.id}`, {
+                    body: JSON.stringify({ data: transferThreeSignatures }),
+                });
+
+                responseGetTx = await got.get(`http://localhost:8080/transaction/${responsePostBody.id}`);
+                body = JSON.parse(responseGetTx.body);
+                expectResponse(transferThreeSignatures);
+
+                // Should be READY
+                readyResponse = JSON.parse(
+                    (await got.get(
+                        "http://localhost:8080/transactions?publicKey=02a942252b20b1069eec7d677cafb6e40d1b6c5ca2f72b5fb88388b340e86a47e8&state=ready",
+                    )).body,
+                );
+                expect(readyResponse).toBeArray();
+                expect(readyResponse).toHaveLength(1);
+
+                pendingResponse = JSON.parse(
+                    (await got.get(
+                        "http://localhost:8080/transactions?publicKey=02a942252b20b1069eec7d677cafb6e40d1b6c5ca2f72b5fb88388b340e86a47e8&state=pending",
+                    )).body,
+                );
+                expect(pendingResponse).toBeArray();
+                expect(pendingResponse).toBeEmpty();
             });
-            const responseGetTx = await got.get(`http://localhost:8080/transaction/${responsePostBody.id}`);
-
-            const body = JSON.parse(responseGetTx.body);
-            expect(body).toBeObject();
-            expect(body.data).toEqual(JSON.parse(JSON.stringify(data2ndSigned)));
-            expect(body.multisigAsset).toEqual(multisigAsset);
-            expect(body.id).toEqual(responsePostBody.id);
-            expect(body).toHaveProperty("timestamp");
         });
     });
 });
