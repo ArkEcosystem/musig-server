@@ -65,7 +65,7 @@
         "@arkecosystem/crypto": "^2.6.0-alpha",
         "@hapi/boom": "^8.0.0",
         "@hapi/hapi": "^18.3.1",
-        "@hapi/joi": "15.1.0",
+        "@hapi/joi": "16.1.4",
         "better-sqlite3": "^5.4.0",
         "got": "^9.6.0",
         "pino": "^5.12.6",
