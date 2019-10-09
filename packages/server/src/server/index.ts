@@ -15,14 +15,23 @@ const initDatabaseSync = () => {
     const transactions = storage.loadAll();
     memory.loadTransactions(transactions);
 
-    // need specific schema validation to disable the need for signatures number == participants number
-    const multiSigSchema = Transactions.schemas.multiSignature;
-    Validation.validator.extendTransaction(multiSigSchema, true);
+    for (const schemaName of Object.keys(Transactions.schemas)) {
+        const schema = Transactions.schemas[schemaName];
 
-    multiSigSchema.properties.signatures.minItems = 0;
-    (multiSigSchema as any).required = ["asset"];
+        if (typeof schema !== "object" || !schema.properties.signatures.minItems || !schema.$id) {
+            continue;
+        }
 
-    Validation.validator.extendTransaction(multiSigSchema);
+        Validation.validator.extendTransaction(schema, true);
+
+        schema.properties.signatures.minItems = 0;
+
+        if (schemaName === "multiSignature") {
+            (schema as any).required = ["asset"];
+        }
+
+        Validation.validator.extendTransaction(schema);
+    }
 
     storage.disconnect();
 };
@@ -65,7 +74,6 @@ export async function startServer(options: Record<string, string | number | bool
                 async query(data: object, options: object) {
                     const schema = {
                         type: "object",
-                        // required: ["publicKey"],
                         properties: {
                             publicKey: {
                                 $ref: "publicKey",
@@ -96,20 +104,6 @@ export async function startServer(options: Record<string, string | number | bool
             auth: false,
             validate: {
                 async payload(data: IStoreTransaction, options: object) {
-                    verifySchema(data.data);
-                },
-            },
-        },
-    });
-
-    server.route({
-        method: "PUT",
-        path: "/transaction/{id}",
-        handler: handlers.putTransaction,
-        options: {
-            auth: false,
-            validate: {
-                async payload(data: { data: Interfaces.ITransactionData }, options: object) {
                     verifySchema(data.data);
                 },
             },

@@ -1,6 +1,6 @@
-import { Interfaces } from "@arkecosystem/crypto";
-import uuidv4 from "uuid/v4";
+import { Interfaces, Transactions } from "@arkecosystem/crypto";
 import { IStoreTransaction } from "../interfaces";
+import { getBaseTransactionId } from "../server/utils";
 
 class Memory {
     private transactions: { [storeId: string]: IStoreTransaction } = {};
@@ -10,8 +10,8 @@ class Memory {
     private txStoreIdsBySender: { [senderPublicKey: string]: string[] } = {};
     private txStoreIdsByPublicKey: { [senderPublicKey: string]: string[] } = {};
 
-    public saveTransaction(transaction: IStoreTransaction, id?: string): string {
-        const storeId = id || uuidv4();
+    public saveTransaction(transaction: IStoreTransaction): string {
+        const storeId = getBaseTransactionId(transaction.data);
         transaction.timestamp = Date.now();
         transaction.id = storeId;
         this.transactions[storeId] = transaction;
@@ -27,14 +27,24 @@ class Memory {
         return storeId;
     }
 
-    public updateTransaction(transaction: Interfaces.ITransactionData, storeId: string): void {
+    public updateTransaction(transaction: Interfaces.ITransactionData): void {
+        const storeId = getBaseTransactionId(transaction);
         const storeTxToUpdate = this.transactions[storeId];
         if (!storeTxToUpdate) {
             throw new Error(`No transaction found for store ID ${storeId}`);
         }
 
+        for (const signatureIndex of Object.keys(transaction.signatures)) {
+            storeTxToUpdate.data.signatures[signatureIndex] = transaction.signatures[signatureIndex];
+        }
+
+        if (transaction.signature) {
+            storeTxToUpdate.data.signature = transaction.signature;
+        }
+
+        this.transactions[storeId].data.id = Transactions.Utils.getId(storeTxToUpdate.data);
+
         // TODO check signature is valid
-        this.transactions[storeId].data = transaction;
     }
 
     public getTransactionById(storeId: string): IStoreTransaction {
@@ -72,7 +82,7 @@ class Memory {
         for (const transaction of transactions) {
             this.saveTransaction(transaction);
         }
-    }    
+    }
 
     private purgeExpiredTransactions(): void {
         for (const id of Object.keys(this.transactions)) {
