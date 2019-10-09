@@ -30,7 +30,6 @@ export const postTransaction = (request, h) => {
     if (
         transaction.data.signatures &&
         transaction.data.signatures.length &&
-        transaction.data.type !== Enums.TransactionType.MultiSignature &&
         (!transaction.data.typeGroup || transaction.data.typeGroup === Enums.TransactionTypeGroup.Core)
     ) {
         if (!verifySignatures(transaction.data, transaction.multisigAsset)) {
