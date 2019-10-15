@@ -12,6 +12,7 @@ export class LogCommand extends BaseCommand {
     public static examples: string[] = [`$ multisig-server log`];
 
     public static flags: CommandFlags = {
+        ...BaseCommand.flagsConfiguration,
         error: flags.boolean({
             description: "only show error output",
         }),
@@ -23,8 +24,8 @@ export class LogCommand extends BaseCommand {
 
     public async run(): Promise<void> {
         const { flags } = this.parse(LogCommand);
-        
-        const processName: string = this.getProcessName();
+
+        const processName: string = this.getProcessName(flags.network as string);
 
         this.abortMissingProcess(processName);
 

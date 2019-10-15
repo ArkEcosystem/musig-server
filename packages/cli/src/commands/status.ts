@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import prettyBytes from "pretty-bytes";
 import prettyMs from "pretty-ms";
 import { processManager } from "../process-manager";
-import { ProcessDescription } from "../types";
+import { CommandFlags, ProcessDescription } from "../types";
 import { renderTable } from "../utils";
 import { BaseCommand } from "./command";
 
@@ -12,8 +12,14 @@ export class StatusCommand extends BaseCommand {
 
     public static examples: string[] = [`$ multisig-server status`];
 
+    public static flags: CommandFlags = {
+        ...BaseCommand.flagsConfiguration,
+    };
+
     public async run(): Promise<void> {
-        const processName: string = this.getProcessName();
+        const { flags } = this.parse(StatusCommand);
+
+        const processName: string = this.getProcessName(flags.network as string);
 
         this.abortMissingProcess(processName);
 

@@ -1,5 +1,6 @@
 import cli from "cli-ux";
 import { processManager } from "../process-manager";
+import { CommandFlags } from "../types";
 import { BaseCommand } from "./command";
 
 export class RestartCommand extends BaseCommand {
@@ -11,8 +12,14 @@ $ multisig-server restart
 `,
     ];
 
+    public static flags: CommandFlags = {
+        ...BaseCommand.flagsConfiguration,
+    };
+
     public async run(): Promise<void> {
-        const processName: string = this.getProcessName();
+        const { flags } = this.parse(RestartCommand);
+
+        const processName: string = this.getProcessName(flags.network as string);
 
         try {
             this.abortMissingProcess(processName);

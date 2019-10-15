@@ -14,6 +14,7 @@ $ multisig-server stop
     ];
 
     public static flags: CommandFlags = {
+        ...BaseCommand.flagsConfiguration,
         kill: flags.boolean({
             description: "kill the process or daemon",
         }),
@@ -22,7 +23,7 @@ $ multisig-server stop
     public async run(): Promise<void> {
         const { flags } = this.parse(StopCommand);
 
-        const processName: string = this.getProcessName();
+        const processName: string = this.getProcessName(flags.network as string);
 
         try {
             this.abortMissingProcess(processName);

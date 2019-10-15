@@ -102,7 +102,7 @@ export abstract class BaseCommand extends Command {
         }
     }
 
-    protected getProcessName(): string {
-        return "multisig-server";
+    protected getProcessName(network: string): string {
+        return `multisig-server-${network}`;
     }
 }

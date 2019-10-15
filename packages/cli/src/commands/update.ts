@@ -11,6 +11,7 @@ export class UpdateCommand extends BaseCommand {
     public static description: string = "Update the MultiSignature server installation";
 
     public static flags: CommandFlags = {
+        ...BaseCommand.flagsConfiguration,
         force: flags.boolean({
             description: "force an update",
         }),
@@ -67,6 +68,6 @@ export class UpdateCommand extends BaseCommand {
 
         this.warn(`Version ${state.updateVersion} has been installed.`);
 
-        await this.restartRunningProcessPrompt(this.getProcessName(), !flags.restart);
+        await this.restartRunningProcessPrompt(this.getProcessName(flags.network), !flags.restart);
     }
 }

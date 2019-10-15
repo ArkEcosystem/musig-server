@@ -25,7 +25,7 @@ $ multisig-server start
     public async run(): Promise<void> {
         const { flags } = this.parse(StartCommand);
 
-        const processName: string = this.getProcessName();
+        const processName: string = this.getProcessName(flags.network as string);
 
         this.abortRunningProcess(processName);
 
