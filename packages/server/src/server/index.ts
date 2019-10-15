@@ -63,6 +63,7 @@ export async function startServer(options: Record<string, string | number | bool
     });
 
     Managers.configManager.setFromPreset(options.network as Types.NetworkName);
+    Managers.configManager.getMilestone().aip11 = true;
 
     server.route({
         method: "GET",
