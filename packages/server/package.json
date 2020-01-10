@@ -64,7 +64,7 @@
     "dependencies": {
         "@arkecosystem/crypto": "^2.6.0-alpha.1",
         "@hapi/boom": "^8.0.0",
-        "@hapi/hapi": "^18.3.1",
+        "@hapi/hapi": "^19.0.0",
         "@hapi/joi": "17.0.0",
         "better-sqlite3": "^5.4.0",
         "got": "^9.6.0",
