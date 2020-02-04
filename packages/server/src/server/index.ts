@@ -1,4 +1,4 @@
-import { Enums, Interfaces, Managers, Transactions, Types, Validation } from "@arkecosystem/crypto";
+import { Managers, Types, Validation } from "@arkecosystem/crypto";
 import { Server } from "@hapi/hapi";
 import { IStoreTransaction } from "../interfaces";
 import { corsHeaders, serverType } from "../plugins";
@@ -7,6 +7,7 @@ import { memory } from "../services/memory";
 import { Storage } from "../services/storage";
 import { TransactionStatus } from "./enums";
 import * as handlers from "./handlers";
+import { transactionSchemaVerifier } from "./transaction-schema-verifier";
 
 const initDatabaseSync = () => {
     const storage = new Storage();
@@ -15,37 +16,7 @@ const initDatabaseSync = () => {
     const transactions = storage.loadAll();
     memory.loadTransactions(transactions);
 
-    for (const schemaName of Object.keys(Transactions.schemas)) {
-        const schema = Transactions.schemas[schemaName];
-
-        if (typeof schema !== "object" || !schema.properties.signatures.minItems || !schema.$id) {
-            continue;
-        }
-
-        Validation.validator.extendTransaction(schema, true);
-
-        schema.properties.signatures.minItems = 0;
-
-        if (schemaName === "multiSignature") {
-            (schema as any).required = ["asset"];
-        }
-
-        Validation.validator.extendTransaction(schema);
-    }
-
     storage.disconnect();
-};
-
-const verifySchema = (data: Interfaces.ITransactionData) => {
-    const isMultiSignaureRegistration =
-        data.type === Enums.TransactionType.MultiSignature &&
-        (!data.typeGroup || data.typeGroup === Enums.TransactionTypeGroup.Core);
-
-    const { error } = Transactions.Verifier.verifySchema(data, !isMultiSignaureRegistration);
-
-    if (error) {
-        throw new Error(error);
-    }
 };
 
 export async function startServer(options: Record<string, string | number | boolean>): Promise<Server> {
@@ -105,7 +76,7 @@ export async function startServer(options: Record<string, string | number | bool
             auth: false,
             validate: {
                 async payload(data: IStoreTransaction, options: object) {
-                    verifySchema(data.data);
+                    transactionSchemaVerifier.verifySchema(data.data);
                 },
             },
         },
