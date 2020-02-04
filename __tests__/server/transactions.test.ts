@@ -111,7 +111,7 @@ describe("Transactions", () => {
 
                 const response = await got.post(`http://localhost:8080/transaction`, {
                     body: JSON.stringify({
-                        data,
+                        data: { ...data, signatures: [] },
                         multisigAsset: mocks.multisigAsset,
                     }),
                 });

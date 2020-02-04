@@ -6,6 +6,7 @@ import { multisigAsset, passphrase, passphrases, publicKey } from "../__mocks__/
 
 beforeAll(async () => {
     Managers.configManager.setFromPreset("testnet");
+    Managers.configManager.setHeight(2); // aip11 from height 2
 });
 
 describe("Utils", () => {
