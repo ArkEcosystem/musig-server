@@ -14,6 +14,10 @@ class TransactionSchemaVerifier {
     }
 
     public verifySchema(data: Interfaces.ITransactionData) {
+        if (!data.signatures) {
+            data.signatures = [];
+        }
+
         const isMultiSignatureRegistration =
             data.type === Enums.TransactionType.MultiSignature &&
             (!data.typeGroup || data.typeGroup === Enums.TransactionTypeGroup.Core);
