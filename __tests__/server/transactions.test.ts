@@ -1,5 +1,6 @@
 import "jest-extended";
 
+import { Builders } from "@arkecosystem/core-magistrate-crypto";
 import { Identities, Managers, Transactions } from "@arkecosystem/crypto";
 import { Server } from "@hapi/hapi";
 import got from "got";
@@ -15,15 +16,15 @@ afterAll(async () => server.stop());
 
 let transaction;
 
-beforeEach(async () => {
-    await got.delete("http://localhost:8080/transactions");
-    transaction = Transactions.BuilderFactory.multiSignature()
-        .multiSignatureAsset(mocks.multisigAsset)
-        .network(23);
-});
-
 describe("Transactions", () => {
     describe("GET transactions", () => {
+        beforeEach(async () => {
+            await got.delete("http://localhost:8080/transactions");
+            transaction = Transactions.BuilderFactory.multiSignature()
+                .multiSignatureAsset(mocks.multisigAsset)
+                .network(23);
+        });
+
         it("should return no transaction when the given public key doesnt exist", async () => {
             const response = await got.get(
                 `http://localhost:8080/transactions?publicKey=035b63b4668ee261c16ca91443f3371e2fe349e131cb7bf5f8a3e93a3ddfdfc788`,
@@ -105,6 +106,13 @@ describe("Transactions", () => {
     });
 
     describe("MultiSignatureRegistration", () => {
+        beforeEach(async () => {
+            await got.delete("http://localhost:8080/transactions");
+            transaction = Transactions.BuilderFactory.multiSignature()
+                .multiSignatureAsset(mocks.multisigAsset)
+                .network(23);
+        });
+
         describe("POST transaction", () => {
             it("should store multisignature registration without signatures", async () => {
                 const data = transaction.sign(mocks.passphrase).getStruct();
@@ -190,19 +198,33 @@ describe("Transactions", () => {
         });
     });
 
-    describe("MultiSignatureTransfer", () => {
-        let transfer;
-        beforeEach(async () => {
+    describe.each([
+        [
+            "transfer",
+            Transactions.BuilderFactory.transfer()
+                .recipientId("ARwS7GvSqkaJsGXU1qoREt86UPf2KLbGKd")
+                .amount("1") as any,
+        ],
+        [
+            "business registration",
+            new Builders.BusinessRegistrationBuilder()
+                .senderPublicKey(Identities.PublicKey.fromMultiSignatureAsset(mocks.multisigAsset))
+                .businessRegistrationAsset({
+                    name: "newbusiness",
+                    website: "http://business.new",
+                }) as any,
+        ],
+    ])("%s multisigned", (name, builder) => {
+        beforeAll(async () => {
             await got.delete("http://localhost:8080/transactions");
-            transfer = Transactions.BuilderFactory.transfer().network(23);
         });
 
         describe("POST transaction", () => {
-            it("should store multisignature transfer with one signature", async () => {
-                const data = transfer
+            let transactionStoreId: string;
+            it(`should store multisignature ${name} with one signature`, async () => {
+                const data = builder
+                    .network(23)
                     .senderPublicKey(Identities.PublicKey.fromMultiSignatureAsset(mocks.multisigAsset))
-                    .recipientId(Identities.Address.fromMultiSignatureAsset(mocks.multisigAsset))
-                    .amount("1")
                     .multiSign(mocks.passphrase, 0)
                     .getStruct();
 
@@ -213,27 +235,12 @@ describe("Transactions", () => {
                     }),
                 });
 
-                expect(JSON.parse(response.body)).toHaveProperty("id");
+                const responseBody = JSON.parse(response.body);
+                expect(responseBody).toHaveProperty("id");
+                transactionStoreId = responseBody.id;
             });
 
             it("should update the transaction", async () => {
-                const data = transfer
-                    .senderPublicKey(Identities.PublicKey.fromMultiSignatureAsset(mocks.multisigAsset))
-                    .recipientId(Identities.Address.fromMultiSignatureAsset(mocks.multisigAsset))
-                    .amount("1")
-                    .multiSign(mocks.passphrase, 0);
-
-                const transferOneSignature = data.getStruct();
-                const responsePostTx = await got.post(`http://localhost:8080/transaction`, {
-                    body: JSON.stringify({
-                        data: transferOneSignature,
-                        multisigAsset: mocks.multisigAsset,
-                    }),
-                });
-
-                const responsePostBody = JSON.parse(responsePostTx.body);
-                expect(responsePostBody).toHaveProperty("id");
-
                 // Should not be READY
                 let readyResponse = JSON.parse(
                     (await got.get(
@@ -252,44 +259,44 @@ describe("Transactions", () => {
                 expect(pendingResponse).toHaveLength(1);
 
                 // update second signature
-                data.multiSign(mocks.passphrases[1], 1);
+                builder.multiSign(mocks.passphrases[1], 1);
 
-                const transferTwoSignatures = data.getStruct();
+                const transactionTwoSignatures = builder.getStruct();
                 await got.post("http://localhost:8080/transaction", {
                     body: JSON.stringify({
-                        data: transferTwoSignatures,
+                        data: transactionTwoSignatures,
                         multisigAsset: mocks.multisigAsset,
                     }),
                 });
 
-                let responseGetTx = await got.get(`http://localhost:8080/transaction/${responsePostBody.id}`);
+                let responseGetTx = await got.get(`http://localhost:8080/transaction/${transactionStoreId}`);
 
                 const expectResponse = transaction => {
                     expect(body).toBeObject();
                     expect(body.data).toEqual(JSON.parse(JSON.stringify(transaction)));
                     expect(body.multisigAsset).toEqual(mocks.multisigAsset);
-                    expect(body.id).toEqual(responsePostBody.id);
+                    expect(body.id).toEqual(transactionStoreId);
                     expect(body).toHaveProperty("timestamp");
                 };
 
                 let body = JSON.parse(responseGetTx.body);
-                expectResponse(transferTwoSignatures);
+                expectResponse(transactionTwoSignatures);
 
                 // update third signature
-                data.multiSign(mocks.passphrases[2], 2);
+                builder.multiSign(mocks.passphrases[2], 2);
 
-                const transferThreeSignatures = data.getStruct();
+                const transactionThreeSignatures = builder.getStruct();
 
                 await got.post("http://localhost:8080/transaction", {
                     body: JSON.stringify({
-                        data: transferThreeSignatures,
+                        data: transactionThreeSignatures,
                         multisigAsset: mocks.multisigAsset,
                     }),
                 });
 
-                responseGetTx = await got.get(`http://localhost:8080/transaction/${responsePostBody.id}`);
+                responseGetTx = await got.get(`http://localhost:8080/transaction/${transactionStoreId}`);
                 body = JSON.parse(responseGetTx.body);
-                expectResponse(transferThreeSignatures);
+                expectResponse(transactionThreeSignatures);
 
                 // Should be READY
                 readyResponse = JSON.parse(
