@@ -9,9 +9,9 @@ import { TransactionStatus } from "./enums";
 import * as handlers from "./handlers";
 import { transactionSchemaVerifier } from "./transaction-schema-verifier";
 
-const initDatabaseSync = () => {
+const initDatabaseSync = (network: string) => {
     const storage = new Storage();
-    storage.connect("transactions-storage.sqlite");
+    storage.connect(`transactions-storage-${network}.sqlite`);
 
     const transactions = storage.loadAll();
     memory.loadTransactions(transactions);
@@ -89,7 +89,7 @@ export async function startServer(options: Record<string, string | number | bool
         handler: handlers.deleteTransactions,
     });
 
-    initDatabaseSync();
+    initDatabaseSync(options.network as string);
 
     await server.start();
 
@@ -98,9 +98,9 @@ export async function startServer(options: Record<string, string | number | bool
     return server;
 }
 
-export const exitHandler = () => {
+export const exitHandler = (network: string) => {
     const storage = new Storage();
-    storage.connect("transactions-storage.sqlite");
+    storage.connect(`transactions-storage-${network}.sqlite`);
 
     const memTransactions = memory.getAllTransactions();
     storage.deleteAll();

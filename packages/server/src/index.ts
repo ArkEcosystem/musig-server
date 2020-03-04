@@ -12,7 +12,7 @@ export const start = async (options: { server: Record<string, any>; logger?: any
     const server = await startServer(options.server);
 
     const exit = () => {
-        exitHandler();
+        exitHandler(options.server.network);
         server.stop();
     };
     process.on("exit", exit);
