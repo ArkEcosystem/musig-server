@@ -20,6 +20,10 @@ export abstract class BaseCommand extends Command {
             default: "testnet",
             options: Object.keys(Networks),
         }),
+        height: flags.integer({
+            description: "the height to load in the network milestone(s)",
+            default: 1,
+        }),
     };
 
     protected flagsToStrings(flags: CommandFlags, ignoreKeys: string[] = []): string {
