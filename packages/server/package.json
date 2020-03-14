@@ -71,7 +71,7 @@
         "got": "^9.6.0",
         "pino": "^5.12.6",
         "pino-pretty": "^3.1.0",
-        "uuid": "^3.3.2",
+        "uuid": "^7.0.0",
         "wif": "^2.0.6"
     },
     "devDependencies": {
@@ -81,7 +81,7 @@
         "@types/hapi__hapi": "^18.2.1",
         "@types/lodash.sample": "^4.2.6",
         "@types/pino": "^5.20.0",
-        "@types/uuid": "^3.4.4",
+        "@types/uuid": "^7.0.0",
         "@types/wif": "^2.0.1"
     },
     "engines": {
