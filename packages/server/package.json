@@ -71,7 +71,7 @@
         "got": "^9.6.0",
         "pino": "^5.12.6",
         "pino-pretty": "^3.1.0",
-        "uuid": "^7.0.0",
+        "uuid": "^8.0.0",
         "wif": "^2.0.6"
     },
     "devDependencies": {
