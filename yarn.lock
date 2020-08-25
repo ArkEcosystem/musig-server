@@ -1971,24 +1971,19 @@
   version "10.2.2"
   resolved "https://registry.yarnpkg.com/@types/hapi__catbox/-/hapi__catbox-10.2.2.tgz#b13fbdd6006c8793eb80919158593bc2bf8307c4"
 
-"@types/hapi__hapi@^19.0.0":
-  version "19.0.2"
-  resolved "https://registry.yarnpkg.com/@types/hapi__hapi/-/hapi__hapi-19.0.2.tgz#a05cc41f1991db7b7f989ef6b2dd6a8662919949"
+"@types/hapi__hapi@^20.0.0":
+  version "20.0.0"
+  resolved "https://registry.yarnpkg.com/@types/hapi__hapi/-/hapi__hapi-20.0.0.tgz#bc83f9589f7be39ecb31fcff9d961c279c9923d0"
+  integrity sha512-Yh/ZNoGcwHTggd/JoeH0DMpwb3Hotw299kjEmFv3WQv+gSi4B6EWQ0tvZx6109JoongCz6HSdnCFKweMEw2G3g==
   dependencies:
     "@hapi/boom" "^9.0.0"
     "@hapi/iron" "^6.0.0"
     "@types/hapi__catbox" "*"
-    "@types/hapi__joi" "*"
     "@types/hapi__mimos" "*"
     "@types/hapi__podium" "*"
     "@types/hapi__shot" "*"
+    "@types/joi" "*"
     "@types/node" "*"
-
-"@types/hapi__joi@*":
-  version "15.0.3"
-  resolved "https://registry.yarnpkg.com/@types/hapi__joi/-/hapi__joi-15.0.3.tgz#eeeca99e3829636975bf39532d6e8279409c78f2"
-  dependencies:
-    "@types/hapi__joi" "*"
 
 "@types/hapi__mimos@*":
   version "4.1.0"
@@ -2030,6 +2025,11 @@
   dependencies:
     jest-diff "^25.2.1"
     pretty-format "^25.2.1"
+
+"@types/joi@*":
+  version "14.3.4"
+  resolved "https://registry.yarnpkg.com/@types/joi/-/joi-14.3.4.tgz#eed1e14cbb07716079c814138831a520a725a1e0"
+  integrity sha512-1TQNDJvIKlgYXGNIABfgFp9y0FziDpuGrd799Q5RcnsDu+krD+eeW/0Fs5PHARvWWFelOhIG2OPCo6KbadBM4A==
 
 "@types/lodash.minby@^4.6.6":
   version "4.6.6"
