@@ -70,7 +70,7 @@ export const deleteTransactions = (request, h) => {
     try {
         memory.deleteAllTransactions();
 
-        return h.status(204);
+        return h.response().code(204);
     } catch (error) {
         return Boom.badImplementation(error.message);
     }
