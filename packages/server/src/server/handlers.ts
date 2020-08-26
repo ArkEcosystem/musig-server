@@ -44,8 +44,6 @@ export const postTransaction = (request, h) => {
     try {
         const transaction: IStoreTransaction = request.payload;
 
-        console.log(transaction);
-
         if (transaction.data.signatures && transaction.data.signatures.length) {
             if (!verifySignatures(transaction.data, transaction.multisigAsset)) {
                 return Boom.badData("Transaction signatures are not valid");
