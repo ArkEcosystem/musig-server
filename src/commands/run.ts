@@ -1,4 +1,4 @@
-import { start } from "@arkecosystem/multisig-server";
+import { start } from "../app";
 import { CommandFlags } from "../types";
 import { BaseCommand } from "./command";
 
