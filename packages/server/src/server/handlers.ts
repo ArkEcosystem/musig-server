@@ -6,21 +6,17 @@ import { getBaseTransactionId, verifySignatures } from "./utils";
 
 export const getTransactions = (request, h) => {
     try {
-        if (request.query.publicKey) {
-            const storeTransactions = memory.getTransactionsByPublicKey(request.query.publicKey);
+        const storeTransactions = memory.getTransactionsByPublicKey(request.query.publicKey);
 
-            if (request.query.state === TransactionStatus.Pending) {
-                return storeTransactions.filter((t) => t.data.signatures.length < t.multisigAsset.min);
-            }
-
-            if (request.query.state === TransactionStatus.Ready) {
-                return storeTransactions.filter((t) => t.data.signatures.length >= t.multisigAsset.min);
-            }
-
-            return storeTransactions;
+        if (request.query.state === TransactionStatus.Pending) {
+            return storeTransactions.filter((t) => t.data.signatures.length < t.multisigAsset.min);
         }
 
-        return memory.getAllTransactions(); // keep or throw error ? (why would we need to get all tx ?)
+        if (request.query.state === TransactionStatus.Ready) {
+            return storeTransactions.filter((t) => t.data.signatures.length >= t.multisigAsset.min);
+        }
+
+        return storeTransactions;
     } catch (error) {
         return Boom.badImplementation(error.message);
     }
