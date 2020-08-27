@@ -1,39 +1,39 @@
 import pino from "pino";
 
 class Logger {
-    private logger: any;
+	private logger: any;
 
-    public constructor() {
-        this.logger = pino({
-            name: "multisig-server",
-            safe: true,
-            prettyPrint: true,
-        });
-    }
+	public constructor() {
+		this.logger = pino({
+			name: "multisig-server",
+			safe: true,
+			prettyPrint: true,
+		});
+	}
 
-    public setLogger(logger: any): void {
-        this.logger = logger;
-    }
+	public setLogger(logger: any): void {
+		this.logger = logger;
+	}
 
-    public error(message: any): void {
-        this.logger.error(message);
-    }
+	public error(message: any): void {
+		this.logger.error(message);
+	}
 
-    public warn(message: any): void {
-        this.logger.warn(message);
-    }
+	public warn(message: any): void {
+		this.logger.warn(message);
+	}
 
-    public info(message: any): void {
-        this.logger.info(message);
-    }
+	public info(message: any): void {
+		this.logger.info(message);
+	}
 
-    public debug(message: any): void {
-        this.logger.debug(message);
-    }
+	public debug(message: any): void {
+		this.logger.debug(message);
+	}
 
-    public verbose(message: any): void {
-        this.logger.verbose(message);
-    }
+	public verbose(message: any): void {
+		this.logger.verbose(message);
+	}
 }
 
 export const logger = new Logger();

@@ -8,83 +8,83 @@ import { join } from "path";
 import semver from "semver";
 
 async function getLatestVersion(name: string): Promise<string> {
-    try {
-        const version: string = await latestVersion(name);
+	try {
+		const version: string = await latestVersion(name);
 
-        return version;
-    } catch (error) {
-        return undefined;
-    }
+		return version;
+	} catch (error) {
+		return undefined;
+	}
 }
 
 function ensureCacheFile(config: IConfig): string {
-    ensureDirSync(config.cacheDir);
+	ensureDirSync(config.cacheDir);
 
-    const fileName = join(config.cacheDir, "update");
+	const fileName = join(config.cacheDir, "update");
 
-    closeSync(openSync(fileName, "w"));
+	closeSync(openSync(fileName, "w"));
 
-    return fileName;
+	return fileName;
 }
 
 export async function installFromChannel(pkg, tag) {
-    const { stdout, stderr } = await sync(`yarn global add ${pkg}@${tag}`, { shell: true });
+	const { stdout, stderr } = sync(`yarn global add ${pkg}@${tag}`, { shell: true });
 
-    if (stderr) {
-        console.error(stderr);
-    }
+	if (stderr) {
+		console.error(stderr);
+	}
 
-    console.log(stdout);
+	console.log(stdout);
 }
 
 export function needsRefresh(config: IConfig): boolean {
-    const cacheFile: string = ensureCacheFile(config);
+	const cacheFile: string = ensureCacheFile(config);
 
-    try {
-        const { mtime } = statSync(cacheFile);
-        const staleAt: Date = new Date(mtime.valueOf() + 1000 * 60 * 60 * 24 * 1);
+	try {
+		const { mtime } = statSync(cacheFile);
+		const staleAt: Date = new Date(mtime.valueOf() + 1000 * 60 * 60 * 24 * 1);
 
-        return staleAt < new Date();
-    } catch (err) {
-        return true;
-    }
+		return staleAt < new Date();
+	} catch (err) {
+		return true;
+	}
 }
 
 export async function checkForUpdates({ config, error, warn }): Promise<any> {
-    const state = {
-        ready: false,
-        name: config.name,
-        currentVersion: config.version,
-    };
+	const state = {
+		ready: false,
+		name: config.name,
+		currentVersion: config.version,
+	};
 
-    try {
-        const cacheFile: string = ensureCacheFile(config);
+	try {
+		const cacheFile: string = ensureCacheFile(config);
 
-        cli.action.start(`Checking for updates`);
-        const latestVersion = await getLatestVersion(state.name);
-        cli.action.stop();
+		cli.action.start(`Checking for updates`);
+		const latestVersion = await getLatestVersion(state.name);
+		cli.action.stop();
 
-        if (latestVersion === undefined) {
-            error(`We were unable to find any releases.`);
+		if (latestVersion === undefined) {
+			error(`We were unable to find any releases.`);
 
-            return state;
-        }
+			return state;
+		}
 
-        if (semver.gt(latestVersion, config.version)) {
-            return {
-                ...state,
-                ...{
-                    ready: true,
-                    updateVersion: latestVersion,
-                    cache: cacheFile,
-                },
-            };
-        }
-    } catch (err) {
-        error(err.message);
-    } finally {
-        cli.action.stop();
-    }
+		if (semver.gt(latestVersion, config.version)) {
+			return {
+				...state,
+				...{
+					ready: true,
+					updateVersion: latestVersion,
+					cache: cacheFile,
+				},
+			};
+		}
+	} catch (err) {
+		error(err.message);
+	} finally {
+		cli.action.stop();
+	}
 
-    return state;
+	return state;
 }

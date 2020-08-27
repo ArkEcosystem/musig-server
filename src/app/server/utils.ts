@@ -2,42 +2,42 @@ import { Crypto, Interfaces, Transactions } from "@arkecosystem/crypto";
 
 // Get base transaction id without signatures
 export const getBaseTransactionId = (transaction: Interfaces.ITransactionData): string => {
-    const baseTransaction: Interfaces.ITransactionData = {
-        ...transaction,
-        signature: null,
-        signatures: [],
-    };
+	const baseTransaction: Interfaces.ITransactionData = {
+		...transaction,
+		signature: null,
+		signatures: [],
+	};
 
-    return Transactions.Utils.getId(baseTransaction);
+	return Transactions.Utils.getId(baseTransaction);
 };
 
 // Verifies that all signatures are valid
 export const verifySignatures = (
-    transaction: Interfaces.ITransactionData,
-    multiSignature: Interfaces.IMultiSignatureAsset,
+	transaction: Interfaces.ITransactionData,
+	multiSignature: Interfaces.IMultiSignatureAsset,
 ): boolean => {
-    const { publicKeys }: Interfaces.IMultiSignatureAsset = multiSignature;
-    const { signatures }: Interfaces.ITransactionData = transaction;
+	const { publicKeys }: Interfaces.IMultiSignatureAsset = multiSignature;
+	const { signatures }: Interfaces.ITransactionData = transaction;
 
-    if (!signatures.length) {
-        return false;
-    }
+	if (!signatures.length) {
+		return false;
+	}
 
-    const hash: Buffer = Transactions.Utils.toHash(transaction, {
-        excludeSignature: true,
-        excludeSecondSignature: true,
-        excludeMultiSignature: true,
-    });
+	const hash: Buffer = Transactions.Utils.toHash(transaction, {
+		excludeSignature: true,
+		excludeSecondSignature: true,
+		excludeMultiSignature: true,
+	});
 
-    for (const signature of signatures) {
-        const publicKeyIndex: number = parseInt(signature.slice(0, 2), 16);
-        const partialSignature: string = signature.slice(2, 130);
-        const publicKey: string = publicKeys[publicKeyIndex];
+	for (const signature of signatures) {
+		const publicKeyIndex: number = parseInt(signature.slice(0, 2), 16);
+		const partialSignature: string = signature.slice(2, 130);
+		const publicKey: string = publicKeys[publicKeyIndex];
 
-        if (!Crypto.Hash.verifySchnorr(hash, partialSignature, publicKey)) {
-            return false;
-        }
-    }
+		if (!Crypto.Hash.verifySchnorr(hash, partialSignature, publicKey)) {
+			return false;
+		}
+	}
 
-    return true;
+	return true;
 };

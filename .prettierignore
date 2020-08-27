@@ -1,3 +1,5 @@
 .coverage
+.pnp.js
+.yarn/**
 dist
 docs

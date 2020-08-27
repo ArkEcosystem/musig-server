@@ -2,47 +2,47 @@ import { Transactions as MagistrateTransactions } from "@arkecosystem/core-magis
 import { Enums, Interfaces, Transactions, Validation } from "@arkecosystem/crypto";
 
 class TransactionSchemaVerifier {
-    public constructor() {
-        for (const schemaName of Object.keys(Transactions.schemas)) {
-            this.extendTransaction(Transactions.schemas[schemaName], schemaName);
-        }
+	public constructor() {
+		for (const schemaName of Object.keys(Transactions.schemas)) {
+			this.extendTransaction(Transactions.schemas[schemaName], schemaName);
+		}
 
-        for (const MagistrateTransaction of Object.values(MagistrateTransactions)) {
-            Transactions.TransactionRegistry.registerTransactionType(MagistrateTransaction);
-            this.extendTransaction(MagistrateTransaction.getSchema());
-        }
-    }
+		for (const MagistrateTransaction of Object.values(MagistrateTransactions)) {
+			Transactions.TransactionRegistry.registerTransactionType(MagistrateTransaction);
+			this.extendTransaction(MagistrateTransaction.getSchema());
+		}
+	}
 
-    public verifySchema(data: Interfaces.ITransactionData) {
-        if (!data.signatures) {
-            data.signatures = [];
-        }
+	public verifySchema(data: Interfaces.ITransactionData) {
+		if (!data.signatures) {
+			data.signatures = [];
+		}
 
-        const isMultiSignatureRegistration =
-            data.type === Enums.TransactionType.MultiSignature &&
-            (!data.typeGroup || data.typeGroup === Enums.TransactionTypeGroup.Core);
+		const isMultiSignatureRegistration =
+			data.type === Enums.TransactionType.MultiSignature &&
+			(!data.typeGroup || data.typeGroup === Enums.TransactionTypeGroup.Core);
 
-        const { error } = Transactions.Verifier.verifySchema(data, !isMultiSignatureRegistration);
+		const { error } = Transactions.Verifier.verifySchema(data, !isMultiSignatureRegistration);
 
-        if (error) {
-            throw new Error(error);
-        }
-    }
+		if (error) {
+			throw new Error(error);
+		}
+	}
 
-    private extendTransaction(schema, schemaName?) {
-        if (typeof schema !== "object" || !schema.properties.signatures.minItems || !schema.$id) {
-            return;
-        }
+	private extendTransaction(schema, schemaName?) {
+		if (typeof schema !== "object" || !schema.properties.signatures.minItems || !schema.$id) {
+			return;
+		}
 
-        Validation.validator.extendTransaction(schema, true);
-        schema.properties.signatures.minItems = 0;
+		Validation.validator.extendTransaction(schema, true);
+		schema.properties.signatures.minItems = 0;
 
-        if (schemaName && schemaName === "multiSignature") {
-            (schema as any).required = ["asset"];
-        }
+		if (schemaName && schemaName === "multiSignature") {
+			schema.required = ["asset"];
+		}
 
-        Validation.validator.extendTransaction(schema);
-    }
+		Validation.validator.extendTransaction(schema);
+	}
 }
 
 export const transactionSchemaVerifier = new TransactionSchemaVerifier();
