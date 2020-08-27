@@ -84,27 +84,29 @@ class Memory {
         }
     }
 
+    public removeById(storeId: string): void {
+        const { data, multisigAsset } = this.transactions[storeId];
+
+        // removes indexes
+        this.txStoreIdsBySender[data.senderPublicKey] = this.txStoreIdsBySender[data.senderPublicKey].filter(
+            (id) => id !== storeId,
+        );
+        for (const publicKey of multisigAsset.publicKeys) {
+            this.txStoreIdsByPublicKey[publicKey] = this.txStoreIdsByPublicKey[publicKey].filter(
+                (id) => id !== storeId,
+            );
+        }
+
+        // remove actual transaction
+        delete this.transactions[storeId];
+    }
+
     private purgeExpiredTransactions(): void {
         for (const id of Object.keys(this.transactions)) {
             if (Date.now() - this.transactions[id].timestamp > 24 * 60 * 60 * 1000) {
                 this.removeById(id);
             }
         }
-    }
-
-    private removeById(storeId: string): void {
-        const { data, multisigAsset } = this.transactions[storeId];
-
-        // removes indexes
-        this.txStoreIdsBySender[data.senderPublicKey] = this.txStoreIdsBySender[data.senderPublicKey].filter(
-            id => id !== storeId,
-        );
-        for (const publicKey of multisigAsset.publicKeys) {
-            this.txStoreIdsByPublicKey[publicKey] = this.txStoreIdsByPublicKey[publicKey].filter(id => id !== storeId);
-        }
-
-        // remove actual transaction
-        delete this.transactions[storeId];
     }
 }
 

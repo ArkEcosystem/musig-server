@@ -83,10 +83,9 @@ export async function startServer(options: Record<string, string | number | bool
         },
     });
 
-    // TODO to change obviously, but do we still allow to delete transactions in some way ?
     server.route({
         method: "DELETE",
-        path: "/transactions",
+        path: "/transactions/{id}",
         handler: handlers.deleteTransactions,
     });
 

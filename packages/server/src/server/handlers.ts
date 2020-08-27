@@ -62,7 +62,7 @@ export const postTransaction = (request, h) => {
 
 export const deleteTransactions = (request, h) => {
     try {
-        memory.deleteAllTransactions();
+        memory.removeById(request.params.id);
 
         return h.response().code(204);
     } catch (error) {
