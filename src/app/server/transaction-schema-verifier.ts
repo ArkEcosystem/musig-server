@@ -35,7 +35,7 @@ class TransactionSchemaVerifier {
 		}
 
 		Validation.validator.extendTransaction(schema, true);
-		schema.properties.signatures.minItems = 0;
+		schema.properties.signatures.minItems = 1; // we require at least one participant to sign the tx
 
 		if (schemaName && schemaName === "multiSignature") {
 			schema.required = ["asset"];

@@ -116,19 +116,27 @@ describe("Transactions", () => {
 		});
 
 		describe("POST transaction", () => {
-			it("should store multisignature registration without signatures", async () => {
+			it("should throw when trying to store multisignature registration without signatures", async () => {
 				const data = transaction.sign(mocks.passphrase).getStruct();
 
-				const response = await got.post(`http://localhost:8080/transaction`, {
+				await expect(got.post(`http://localhost:8080/transaction`, {
 					body: JSON.stringify({
 						data,
 						multisigAsset: mocks.multisigAsset,
 					}),
-				});
-
-				expect(JSON.parse(response.body)).toHaveProperty("id");
+				})).toReject();
 			});
 
+            it("should throw when trying to store multisignature registration with wrong signature", async () => {
+				const data = transaction.sign(mocks.passphrase).multiSign("wrong passphrase", 0).getStruct();
+				await expect(got.post(`http://localhost:8080/transaction`, {
+					body: JSON.stringify({
+						data,
+						multisigAsset: mocks.multisigAsset,
+					}),
+				})).toReject();
+            });
+            
 			it("should store multisignature registration with one signature", async () => {
 				const data = transaction.sign(mocks.passphrase).multiSign(mocks.passphrase, 0).getStruct();
 				const response = await got.post(`http://localhost:8080/transaction`, {
@@ -207,7 +215,10 @@ describe("Transactions", () => {
 		// ],
 	])("%s multisigned", (name, builder) => {
 		describe("POST transaction", () => {
-			let transactionStoreId: string;
+            let transactionStoreId: string;
+            
+            
+            
 			it(`should store multisignature ${name} with one signature`, async () => {
 				const data = builder
 					.network(23)
@@ -309,7 +320,23 @@ describe("Transactions", () => {
 				);
 				expect(pendingResponse).toBeArray();
 				expect(pendingResponse).toBeEmpty();
-			});
+            });
+            
+            it(`should not store multisignature ${name} without signature`, async () => {
+				const data = builder
+					.network(23)
+					.senderPublicKey(Identities.PublicKey.fromMultiSignatureAsset(mocks.multisigAsset))
+					.multiSign(mocks.passphrase, 0)
+                    .getStruct();
+                delete data.signatures;
+
+				await expect(got.post(`http://localhost:8080/transaction`, {
+					body: JSON.stringify({
+						data,
+						multisigAsset: mocks.multisigAsset,
+					}),
+				})).toReject();
+            });
 		});
 	});
 });
