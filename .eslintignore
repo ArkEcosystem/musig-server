@@ -1,9 +1,10 @@
-/__tests__/**/*.spec.ts
+/__snapshots__/
 /__tests__/unit/coverage/
 /*.js
 /build/
 /config/
-/dist/
+/distribution/
 /docs/
+/prisma/
 /node_modules/**
 env.json

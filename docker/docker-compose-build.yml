@@ -1,0 +1,27 @@
+version: "2.1"
+services:
+    musig:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: arkecosystem/musig-server
+        container_name: ark-musig-test
+        restart: always
+        ports:
+            - "${PORT:-3334}:${PORT:-3334}"
+        cap_add:
+            - SYS_NICE
+            - SYS_RESOURCE
+            - SYS_TIME
+        volumes:
+            - ~/.ark-musig-test:/home/node/.local
+        networks:
+            - ark-musig-test
+        environment:
+            - MODE=${MODE:-test}
+            - COIN=${COIN:-ark}
+        tty: true
+volumes:
+    ark-musig-test:
+networks:
+    ark-musig-test:

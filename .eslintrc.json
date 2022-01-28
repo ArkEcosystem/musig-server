@@ -4,22 +4,37 @@
 		"project": "./tsconfig.eslint.json",
 		"extraFileExtensions": [".json"]
 	},
-	"plugins": ["@typescript-eslint", "jest", "prettier", "simple-import-sort"],
+	"plugins": [
+		"@typescript-eslint",
+		"jest",
+		"prettier",
+		"simple-import-sort",
+		"unused-imports",
+		"eslint-plugin-tsdoc"
+	],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/eslint-recommended",
 		"plugin:@typescript-eslint/recommended-requiring-type-checking",
 		"plugin:@typescript-eslint/recommended",
+		"plugin:import/errors",
+		"plugin:import/typescript",
+		"plugin:import/warnings",
 		"plugin:jest/recommended",
 		"plugin:prettier/recommended",
-		"prettier/@typescript-eslint"
+		"prettier"
 	],
 	"rules": {
 		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/ban-types": "off",
+		"@typescript-eslint/explicit-module-boundary-types": "off",
 		"@typescript-eslint/naming-convention": "off",
+		"@typescript-eslint/no-empty-function": "off",
 		"@typescript-eslint/no-empty-interface": "off",
 		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-misused-promises": "off",
+		"@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+		"@typescript-eslint/no-non-null-assertion": "off",
 		"@typescript-eslint/no-unsafe-assignment": "off",
 		"@typescript-eslint/no-unsafe-call": "off",
 		"@typescript-eslint/no-unsafe-member-access": "off",
@@ -29,6 +44,32 @@
 		"@typescript-eslint/require-await": "off",
 		"@typescript-eslint/restrict-plus-operands": "off",
 		"@typescript-eslint/restrict-template-expressions": "off",
+		"import/default": "error",
+		"import/export": "warn",
+		"import/exports-last": "warn",
+		"import/extensions": "error",
+		"import/first": "error",
+		"import/group-exports": "off",
+		"import/namespace": "error",
+		"import/no-absolute-path": "error",
+		"import/no-anonymous-default-export": "error",
+		"import/no-cycle": "warn",
+		"import/no-deprecated": "error",
+		"import/no-duplicates": "error",
+		"import/no-dynamic-require": "off",
+		"import/no-extraneous-dependencies": "error",
+		"import/no-mutable-exports": "error",
+		"import/no-namespace": "warn",
+		"import/no-restricted-paths": "error",
+		"import/no-self-import": "error",
+		"import/no-unresolved": "warn",
+		"import/no-unused-modules": "error",
+		"import/no-useless-path-segments": "error",
+		"import/no-webpack-loader-syntax": "error",
+		"import/order": "error",
+		"jest/no-conditional-expect": "off",
+		"no-async-promise-executor": "off",
+		"no-prototype-builtins": "off",
 		"prefer-const": [
 			"error",
 			{
@@ -36,6 +77,7 @@
 			}
 		],
 		"prettier/prettier": "error",
-		"simple-import-sort/sort": "error"
+		"tsdoc/syntax": "off",
+		"unused-imports/no-unused-imports-ts": "warn"
 	}
 }
