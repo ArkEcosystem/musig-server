@@ -7,7 +7,7 @@
 	"main": "distribution/index",
 	"types": "distribution/index",
 	"bin": {
-		"ark-musig": "bin/run"
+		"musig": "bin/run"
 	},
 	"files": [
 		"bin",
