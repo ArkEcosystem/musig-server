@@ -28,8 +28,8 @@
 		"test": "jest --forceExit --runInBand"
 	},
 	"dependencies": {
-		"@arkecosystem/core-magistrate-crypto": "^2.7.7",
-		"@arkecosystem/crypto": "^2.7.7",
+		"@arkecosystem/core-magistrate-crypto": "^3.0.0",
+		"@arkecosystem/crypto": "^3.0.0",
 		"@hapi/boom": "^9.1.0",
 		"@hapi/hapi": "^20.0.1",
 		"@kodekeep/foreman": "^1.0.0",
@@ -59,9 +59,12 @@
 		"execa": "^4.1.0",
 		"fast-levenshtein": "^3.0.0",
 		"fs-extra": "^9.0.1",
+		"get-value": "^3.0.1",
 		"got": "^11.8.0",
+		"joi": "^17.6.0",
 		"latest-version": "^5.1.0",
 		"lodash.minby": "^4.6.0",
+		"media-type": "^0.3.1",
 		"micromatch": "^4.0.2",
 		"nanomatch": "^1.2.13",
 		"nodejs-tail": "^1.1.0",
@@ -73,6 +76,7 @@
 		"rate-limiter-flexible": "^2.1.13",
 		"read-last-lines": "^1.7.2",
 		"semver": "^7.3.2",
+		"set-value": "^4.1.0",
 		"uuid": "^8.3.1",
 		"wif": "^2.0.6"
 	},

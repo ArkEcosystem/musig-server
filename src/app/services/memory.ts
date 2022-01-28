@@ -15,15 +15,15 @@ class Memory {
 	}
 
 	public saveTransaction(transaction: IStoreTransaction): string {
-		this.hasRemainingTransactionSlots(transaction.data.senderPublicKey);
+		this.hasRemainingTransactionSlots(transaction.data.senderPublicKey!);
 
 		const storeId = getBaseTransactionId(transaction.data);
 		transaction.timestamp = Date.now();
 		transaction.id = storeId;
 		this.transactions[storeId] = transaction;
-		this.txStoreIdsBySender[transaction.data.senderPublicKey] =
-			this.txStoreIdsBySender[transaction.data.senderPublicKey] || [];
-		this.txStoreIdsBySender[transaction.data.senderPublicKey].push(storeId);
+		this.txStoreIdsBySender[transaction.data.senderPublicKey!] =
+			this.txStoreIdsBySender[transaction.data.senderPublicKey!] || [];
+		this.txStoreIdsBySender[transaction.data.senderPublicKey!].push(storeId);
 
 		for (const publicKey of transaction.multisigAsset.publicKeys) {
 			this.txStoreIdsByPublicKey[publicKey] = this.txStoreIdsByPublicKey[publicKey] || [];
@@ -95,7 +95,7 @@ class Memory {
 	public removeById(storeId: string): void {
 		const { data, multisigAsset } = this.transactions[storeId];
 
-		// removes indexes
+					// @ts-ignore
 		this.txStoreIdsBySender[data.senderPublicKey] = this.txStoreIdsBySender[data.senderPublicKey].filter(
 			(id) => id !== storeId,
 		);

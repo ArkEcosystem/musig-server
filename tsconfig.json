@@ -8,6 +8,7 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"outDir": "dist",
+		"useUnknownInCatchVariables": false,
 		"sourceMap": true,
 		"target": "es2019"
 	},

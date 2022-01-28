@@ -41,6 +41,7 @@ export class LogCommand extends BaseCommand {
 			`Tailing last ${flags.lines} lines for [${processName}] process (change the value with --lines option)`,
 		);
 
+					// @ts-ignore
 		this.log((await readLastLines.read(file, flags.lines)).trim());
 
 		const log = new Tail(file);
